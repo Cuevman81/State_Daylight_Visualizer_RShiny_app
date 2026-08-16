@@ -47,3 +47,12 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# macOS
+.DS_Store
+
+# Claude Code local settings
+.claude/
+
+# Local pre-audit safety copies
+app.R.backup-*

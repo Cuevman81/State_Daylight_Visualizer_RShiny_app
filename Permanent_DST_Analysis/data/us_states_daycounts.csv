@@ -1,0 +1,51 @@
+"state","days_sunrise_after_730am_current","days_sunrise_after_730am_permanent_dst","days_sunset_after_6pm_current","days_sunset_after_6pm_permanent_dst"
+"alabama",0,81,235,293
+"alaska",195,195,254,275
+"arizona",36,36,249,249
+"arkansas",2,129,253,354
+"california",0,113,238,297
+"colorado",1,124,242,297
+"connecticut",0,113,228,269
+"delaware",1,124,241,297
+"florida",35,162,286,365
+"georgia",95,175,281,365
+"hawaii",0,0,302,302
+"idaho",158,183,265,365
+"illinois",0,118,234,284
+"indiana",169,196,278,365
+"iowa",75,148,250,306
+"kansas",125,176,271,365
+"kentucky",149,190,279,365
+"louisiana",0,119,256,365
+"maine",0,104,217,242
+"maryland",6,133,246,308
+"massachusetts",0,110,225,262
+"michigan",168,188,268,365
+"minnesota",108,156,249,291
+"mississippi",0,105,242,324
+"missouri",9,136,250,318
+"montana",115,158,249,290
+"nebraska",154,185,271,365
+"nevada",0,101,227,269
+"new hampshire",0,112,223,257
+"new jersey",0,122,236,287
+"new mexico",0,119,248,330
+"new york",38,132,237,283
+"north carolina",18,145,260,365
+"north dakota",175,187,264,330
+"ohio",124,172,266,365
+"oklahoma",97,169,272,365
+"oregon",48,133,234,279
+"pennsylvania",55,142,248,306
+"rhode island",0,107,225,263
+"south carolina",40,154,269,365
+"south dakota",165,186,267,365
+"tennessee",0,89,230,279
+"texas",106,183,288,365
+"utah",104,164,264,365
+"vermont",0,119,226,263
+"virginia",38,144,256,348
+"washington",74,138,229,268
+"west virginia",84,157,261,365
+"wisconsin",46,131,231,273
+"wyoming",68,143,246,294
