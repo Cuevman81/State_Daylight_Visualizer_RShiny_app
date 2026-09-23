@@ -22,7 +22,7 @@ This application provides a comprehensive, interactive almanac of celestial data
 *   **Phase Calendar**: Monthly moon phase visualization with traditional full moon names.
 *   **Major Phases**: New/first-quarter/full/third-quarter dates **and times**, computed with the Meeus ch. 49 algorithm and expressed in the location's own timezone (verified to within 0.5 min of published values).
 *   **Lunar Events**: Tracking for Supermoons, Micro-moons, Blue Moons, and Black Moons.
-*   **Illumination & Distance**: Daily Earth-Moon distance and illumination percentages.
+*   **Illumination & Distance**: Daily illumination percentages and Earth-Moon distance. Distance uses the Meeus ch. 47 series (within 8 km of JPL Horizons at every new and full moon of 2025–2026), and each new or full moon is judged super/micro at its own instant.
 *   **Visibility Schedule**: Estimated moonrise and moonset times for your specific location (days when the moon does not rise or set are labelled rather than left blank).
 
 ### 3. Specialized Tools

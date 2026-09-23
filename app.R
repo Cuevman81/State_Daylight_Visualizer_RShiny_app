@@ -281,38 +281,91 @@ get_major_phases <- function(from_date, to_date, tz) {
     select(date, phase_time, phase_type)
 }
 
+# --- Earth-Moon distance (Meeus, Astronomical Algorithms, ch. 47) ---------------
+# suncalc's getMoonPosition() distance is a one-term formula,
+# 385001 - 20905*cos(M), so it can never go below 364,096 km. Real perigees
+# reach ~356,400 km because the Sun's pull (evection, variation) is left out,
+# and near perigee suncalc ran up to ~9,000 km long -- enough that no 2026 full
+# moon was flagged as a supermoon. This is the Sigma-r series of Meeus ch. 47
+# (the same book as the phase algorithm above). Verified against JPL Horizons
+# (geocentric range): within 8 km at every USNO new/full moon of 2025-2026,
+# max 42 km over all 8,761 hours of 2026; suncalc was off by up to 7,582 km.
+moon_distance_km <- function(times) {
+  # POSIXct (UT) -> Julian Ephemeris Day. deltaT ~69 s as in get_major_phases();
+  # near perigee the distance changes by up to ~5 km a minute.
+  jde <- as.numeric(as.POSIXct(times, tz = "UTC")) / 86400 + 2440587.5 + 69 / 86400
+  Tt  <- (jde - 2451545.0) / 36525
+  D   <- .deg2rad(297.8501921 + 445267.1114034 * Tt - 0.0018819 * Tt^2 +
+                  Tt^3 / 545868 - Tt^4 / 113065000)
+  M   <- .deg2rad(357.5291092 +  35999.0502909 * Tt - 0.0001536 * Tt^2 +
+                  Tt^3 / 24490000)
+  Mp  <- .deg2rad(134.9633964 + 477198.8675055 * Tt + 0.0087414 * Tt^2 +
+                  Tt^3 / 69699 - Tt^4 / 14712000)
+  F   <- .deg2rad( 93.2720950 + 483202.0175233 * Tt - 0.0036539 * Tt^2 -
+                  Tt^3 / 3526000 + Tt^4 / 863310000)
+  E   <- 1 - 0.002516 * Tt - 0.0000074 * Tt^2
+
+  # Table 47.A, distance column: multiples of D, M, M', F and the coefficient
+  # in metres (rows whose distance coefficient is zero are left out).
+  tab <- matrix(c(
+    0, 0, 1, 0, -20905355,   2, 0,-1, 0, -3699111,   2, 0, 0, 0, -2955968,
+    0, 0, 2, 0,   -569925,   0, 1, 0, 0,    48888,   0, 0, 0, 2,    -3149,
+    2, 0,-2, 0,    246158,   2,-1,-1, 0,  -152138,   2, 0, 1, 0,  -170733,
+    2,-1, 0, 0,   -204586,   0, 1,-1, 0,  -129620,   1, 0, 0, 0,   108743,
+    0, 1, 1, 0,    104755,   2, 0, 0,-2,    10321,   0, 0, 1,-2,    79661,
+    4, 0,-1, 0,    -34782,   0, 0, 3, 0,   -23210,   4, 0,-2, 0,   -21636,
+    2, 1,-1, 0,     24208,   2, 1, 0, 0,    30824,   1, 0,-1, 0,    -8379,
+    1, 1, 0, 0,    -16675,   2,-1, 1, 0,   -12831,   2, 0, 2, 0,   -10445,
+    4, 0, 0, 0,    -11650,   2, 0,-3, 0,    14403,   0, 1,-2, 0,    -7003,
+    2,-1,-2, 0,     10056,   1, 0, 1, 0,     6322,   2,-2, 0, 0,    -9884,
+    0, 1, 2, 0,      5751,   2,-2,-1, 0,    -4950,   2, 0, 1,-2,     4130,
+    4,-1,-1, 0,     -3958,   3, 0,-1, 0,     3258,   2, 1, 1, 0,     2616,
+    4,-1,-2, 0,     -1897,   0, 2,-1, 0,    -2117,   2, 2,-1, 0,     2354,
+    4, 0, 1, 0,     -1423,   0, 0, 4, 0,    -1117,   4,-1, 0, 0,    -1571,
+    1, 0,-2, 0,     -1739,   0, 0, 2,-2,    -4421,   0, 2, 1, 0,     1165,
+    2, 0,-1,-2,      8752), ncol = 5, byrow = TRUE)
+
+  arg   <- outer(D, tab[, 1]) + outer(M, tab[, 2]) + outer(Mp, tab[, 3]) + outer(F, tab[, 4])
+  efac  <- outer(E, abs(tab[, 2]), `^`)   # terms in M carry E, terms in 2M carry E^2
+  sum_r <- rowSums(sweep(cos(arg) * efac, 2, tab[, 5], `*`))
+  385000.56 + sum_r / 1000
+}
+
 # --- 1A. Lunar Events (full restoration: Super/Micro New, Blue Moon, Black Moon) ---
 # major_phases     = phases inside the analysis year (drives Blue Moon)
 # major_phases_ext = phases spanning Dec(year-1) .. Mar(year+1). A season runs
 #   solstice-to-equinox and therefore straddles the New Year, so the seasonal
 #   Black Moon test needs phases from outside the analysis year to count a
 #   four-new-moon winter correctly.
-get_lunar_events <- function(daily_moon_data, major_phases, year, lat, lon,
+get_lunar_events <- function(daily_moon_data, major_phases, year,
                              major_phases_ext = major_phases) {
-  moon_position        <- getMoonPosition(date = daily_moon_data$date, lat = lat, lon = lon)
-  daily_moon_data$distance_km <- moon_position$distance
-
+  # Thresholds: the year's 10th / 90th percentiles of daily distance.
   dist_super <- quantile(daily_moon_data$distance_km, 0.10)
   dist_micro <- quantile(daily_moon_data$distance_km, 0.90)
 
-  full_moons_dates <- major_phases$date[major_phases$phase_type == "Full Moon"]
-  new_moons_dates  <- major_phases$date[major_phases$phase_type == "New Moon"]
+  # Judge each new/full moon by its distance at the moment of the phase. It used
+  # to be the 00:00 UTC distance on the phase's local date, which can be most of
+  # a day away -- near perigee that alone moves the distance by thousands of km.
+  syzygies <- major_phases %>%
+    filter(phase_type %in% c("Full Moon", "New Moon")) %>%
+    mutate(distance_km = moon_distance_km(phase_time))
 
-  super_full <- daily_moon_data %>%
-    filter(date %in% full_moons_dates, distance_km <= dist_super) %>%
+  super_full <- syzygies %>%
+    filter(phase_type == "Full Moon", distance_km <= dist_super) %>%
     mutate(event = "Super Full Moon", details = paste("Moon at approx.", round(distance_km), "km"))
 
-  micro_full <- daily_moon_data %>%
-    filter(date %in% full_moons_dates, distance_km >= dist_micro) %>%
+  micro_full <- syzygies %>%
+    filter(phase_type == "Full Moon", distance_km >= dist_micro) %>%
     mutate(event = "Micro Full Moon", details = paste("Moon at approx.", round(distance_km), "km"))
 
-  super_new <- daily_moon_data %>%
-    filter(date %in% new_moons_dates, distance_km <= dist_super) %>%
-    mutate(event = "Super New Moon", details = "Closest new moon of the year")
+  # A year can hold several of these, so not "the closest/farthest of the year"
+  super_new <- syzygies %>%
+    filter(phase_type == "New Moon", distance_km <= dist_super) %>%
+    mutate(event = "Super New Moon", details = paste("New moon near perigee,", round(distance_km), "km"))
 
-  micro_new <- daily_moon_data %>%
-    filter(date %in% new_moons_dates, distance_km >= dist_micro) %>%
-    mutate(event = "Micro New Moon", details = "Farthest new moon of the year")
+  micro_new <- syzygies %>%
+    filter(phase_type == "New Moon", distance_km >= dist_micro) %>%
+    mutate(event = "Micro New Moon", details = paste("New moon near apogee,", round(distance_km), "km"))
 
   blue_moons <- major_phases %>%
     filter(phase_type == "Full Moon") %>%
@@ -393,7 +446,9 @@ get_combined_moon_data <- function(lat, lon, analysis_year) {
     phase_angle  = moon_illum$phase,
     moonrise     = moon_times$rise,
     moonset      = moon_times$set,
-    distance_km  = moon_pos$distance,
+    # Same 00:00 UTC sample as the columns around it, but from Meeus ch. 47
+    # rather than suncalc's distance (see moon_distance_km()).
+    distance_km  = moon_distance_km(all_dates),
     altitude_deg = moon_pos$altitude * 180 / pi,
     azimuth_deg  = (moon_pos$azimuth * 180 / pi + 180) %% 360   # convert to compass bearing
   ) %>%
@@ -448,7 +503,7 @@ get_combined_moon_data <- function(lat, lon, analysis_year) {
       phase_alpha = ifelse(phase_name == "Gibbous", 0.5, 1.0)
     )
 
-  lunar_events <- get_lunar_events(daily_data, major_phases, analysis_year, lat, lon,
+  lunar_events <- get_lunar_events(daily_data, major_phases, analysis_year,
                                    major_phases_ext = major_phases_ext)
 
   phase_to_abbr <- c("New Moon" = "NM", "First Quarter" = "FQ",
@@ -1477,13 +1532,11 @@ server <- function(input, output, session) {
   output$p_moon_distance <- renderPlot({
     df <- lunar_data()$daily_data
 
-    # Explicit as.Date() on both sides avoids POSIXct vs Date type mismatch
-    # that would cause the join to produce all-NA distance_km values.
-    full_dates <- as.Date(lunar_data()$major_phases$date[
-      lunar_data()$major_phases$phase_type == "Full Moon"
-    ])
-    phases     <- df %>%
-      filter(as.Date(date) %in% full_dates) %>%
+    # Each full moon's distance at the moment of full moon (not the 00:00 UTC
+    # daily sample, which can be most of a day away), plotted on its local date.
+    phases     <- lunar_data()$major_phases %>%
+      filter(phase_type == "Full Moon") %>%
+      mutate(distance_km = moon_distance_km(phase_time)) %>%
       select(date, distance_km)
     supermoons <- phases %>% slice_min(distance_km, n = 2)
 
