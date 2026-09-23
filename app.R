@@ -1074,14 +1074,25 @@ server <- function(input, output, session) {
   #
   # Everything downstream now reads this snapshot, so the whole dashboard always
   # describes one consistent set of parameters.
+  #
+  # The dropdowns and the year box's 1950-2050 limits only exist in the browser,
+  # so check the values here too: grid cost grows with the square of `res`, and
+  # a crafted grid_res = "5000" was accepted as-is.
   params <- eventReactive(input$go, {
     req(coords$lat, coords$lon, input$year, input$state)
+    yr  <- suppressWarnings(as.numeric(input$year))
+    validate(need(length(yr) == 1 && !is.na(yr) && yr == round(yr) && yr >= 1950 && yr <= 2050,
+                  "Analysis Year must be a whole year from 1950 to 2050."))
+    validate(need(length(input$state) == 1 && input$state %in% toTitleCase(state.name),
+                  "Please choose a U.S. state."))
+    res <- suppressWarnings(as.integer(input$grid_res))
+    if (length(res) != 1 || !res %in% c(15L, 30L, 50L)) res <- 30L
     list(
       lat   = coords$lat,
       lon   = coords$lon,
-      year  = input$year,
+      year  = as.integer(yr),
       state = input$state,
-      res   = as.integer(input$grid_res)
+      res   = res
     )
   }, ignoreNULL = FALSE)
 
