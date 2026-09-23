@@ -618,8 +618,10 @@ get_combined_sun_data <- function(lat, lon, analysis_year) {
                           as.numeric(difftime(sunset, goldenHour,     units = "mins"))
     )
 
-  # DST detection
-  tz_abbr   <- format(with_tz(as.POSIXct(all_dates), tz), "%Z")
+  # DST detection. Sample each date at LOCAL noon: as.POSIXct() on a bare Date
+  # is 00:00 UTC, which in every U.S. zone is the previous evening, so the
+  # change used to show up on the Monday after the Sunday switch.
+  tz_abbr   <- format(as.POSIXct(paste(all_dates, "12:00:00"), tz = tz), "%Z")
   tz_idx    <- which(tz_abbr != dplyr::lag(tz_abbr, default = tz_abbr[1]))
   dst_dates <- if (length(tz_idx) >= 1) all_dates[tz_idx] else NULL
 
@@ -810,8 +812,8 @@ get_state_sun_grid <- function(state_name, analysis_year, resolution = 30) {
     ) %>%
     left_join(monthly_avg %>% select(month, facet_label), by = "month")
 
-  # DST detection for center location
-  tz_abbr   <- format(with_tz(as.POSIXct(all_dates), tz), "%Z")
+  # DST detection for center location (local noon, as in get_combined_sun_data)
+  tz_abbr   <- format(as.POSIXct(paste(all_dates, "12:00:00"), tz = tz), "%Z")
   tz_idx    <- which(tz_abbr != dplyr::lag(tz_abbr, default = tz_abbr[1]))
   dst_dates <- if (length(tz_idx) >= 1) all_dates[tz_idx] else NULL
 
