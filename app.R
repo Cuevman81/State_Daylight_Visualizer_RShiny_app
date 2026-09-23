@@ -1285,9 +1285,13 @@ server <- function(input, output, session) {
       p <- p + geom_vline(xintercept = today_line(), linetype = "dashed", alpha = 0.5)
 
     if (!is.null(dst) && length(dst) > 0) {
+      # Label each change by its direction, not its order in the year: south of
+      # the equator the first change (e.g. April in Sydney) is the fall-back.
+      # "%z" is +HHMM, which orders the same way as the offset itself.
+      utc_off <- function(d) as.numeric(format(as.POSIXct(paste(d, "12:00:00"), tz = tz), "%z"))
       dst_labels <- data.frame(
         date  = dst,
-        label = if (length(dst) >= 2) c("Spring\nForward", "Fall\nBack") else rep("DST", length(dst))
+        label = ifelse(utc_off(dst) > utc_off(dst - 1), "Spring\nForward", "Fall\nBack")
       )
       p <- p +
         geom_vline(xintercept = dst, color = "red", linetype = "dotted", linewidth = 0.9) +
