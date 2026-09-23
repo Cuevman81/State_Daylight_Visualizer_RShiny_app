@@ -93,10 +93,19 @@ states <- tibble::tribble(
 days <- seq(as.Date("2025-01-01"), as.Date("2025-12-31"), by = "day")
 grid <- tidyr::crossing(states, date = days)
 
-st <- getSunlightTimes(data = data.frame(date = grid$date, lat = grid$lat, lon = grid$lon),
-                       keep = c("sunrise", "sunset"), tz = "UTC")
-grid$sunrise <- st$sunrise
-grid$sunset  <- st$sunset
+# Ask suncalc for each state's own local (standard-time) day. With tz = "UTC"
+# it returns the events inside the UTC day, and every U.S. summer sunset falls
+# after 00:00 UTC -- so each date's sunset was really the previous local day's,
+# and a re-run moved 24 of the 200 counts by one day. Etc/GMT signs are
+# inverted (Etc/GMT+6 == UTC-6).
+grid$sunrise <- grid$sunset <- as.POSIXct(NA, tz = "UTC")
+for (o in unique(grid$off)) {
+  i  <- which(grid$off == o)
+  st <- getSunlightTimes(data = data.frame(date = grid$date[i], lat = grid$lat[i], lon = grid$lon[i]),
+                         keep = c("sunrise", "sunset"), tz = sprintf("Etc/GMT%+d", -o))
+  grid$sunrise[i] <- st$sunrise
+  grid$sunset[i]  <- st$sunset
+}
 
 localdec <- function(posix, offh) {
   p <- posix + offh * 3600
