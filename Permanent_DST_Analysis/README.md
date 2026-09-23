@@ -97,6 +97,7 @@ representative point, so Mississippi's differ slightly from the Jackson figures.
 ```
 Permanent_DST_Analysis/
 ├── README.md                                            ← this file
+├── requirements.txt                                     ← Python versions for the two .py scripts
 ├── scripts/
 │   ├── compute_and_plot.py                              ← NOAA sun math + Jackson figures (Python)
 │   ├── linkedin_graphic.py                              ← LinkedIn-ready social graphic (Python)
@@ -142,9 +143,13 @@ base `{maps}` state boundaries don't include them. Their exact times are in the 
 ```bash
 python3 scripts/compute_and_plot.py   # Jackson figures 01–03 (needs numpy, matplotlib)
 python3 scripts/linkedin_graphic.py   # social graphic 05  (needs numpy, matplotlib)
-Rscript   scripts/us_map.R            # US map 04        (needs suncalc, maps, ggplot2, dplyr, tidyr)
+Rscript   scripts/us_map.R            # US map 04        (needs suncalc, maps, mapdata, ggplot2, dplyr, tidyr, tibble, patchwork)
 Rscript   scripts/us_map_daycounts.R  # US map 06        (same R packages)
 ```
+
+The R scripts write into this folder's `data/` and `plots/` wherever the repo is
+cloned. `requirements.txt` pins the Python versions that reproduce the committed
+CSV byte-for-byte (`pip install -r requirements.txt`).
 
 On the MacBook Air, the Python environment lives at `~/.venvs/sunrise_dst`
 (Homebrew Python + numpy + matplotlib):

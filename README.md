@@ -20,13 +20,13 @@ This application provides a comprehensive, interactive almanac of celestial data
 
 ### 2. Lunar Analysis
 *   **Phase Calendar**: Monthly moon phase visualization with traditional full moon names.
-*   **Major Phases**: New/first-quarter/full/third-quarter dates **and times**, computed with the Meeus ch. 49 algorithm and expressed in the location's own timezone (verified to within 0.5 min of published values).
+*   **Major Phases**: New/first-quarter/full/third-quarter dates **and times**, computed with the Meeus ch. 49 algorithm and expressed in the location's own timezone (within a minute of the U.S. Naval Observatory's published times: max 0.8 min, mean 0.3 min across all 99 phases of 2025–2026).
 *   **Lunar Events**: Tracking for Supermoons, Micro-moons, Blue Moons, and Black Moons.
 *   **Illumination & Distance**: Daily illumination percentages and Earth-Moon distance. Distance uses the Meeus ch. 47 series (within 8 km of JPL Horizons at every new and full moon of 2025–2026), and each new or full moon is judged super/micro at its own instant.
 *   **Visibility Schedule**: Estimated moonrise and moonset times for your specific location (days when the moon does not rise or set are labelled rather than left blank).
 
 ### 3. Specialized Tools
-*   **Sky Watcher**: Dark sky observation windows (nautical dusk-to-dawn) filtered by moon interference.
+*   **Sky Watcher**: Dark sky observation windows (nautical dusk-to-dawn) shaded by the Moon's illumination that night (whether or not the Moon is up).
 *   **Photography Planner**: Ideal windows for Golden Hour and Blue Hour photography.
 
 ### 4. Regional Trends

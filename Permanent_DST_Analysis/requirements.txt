@@ -1,0 +1,4 @@
+# Python packages for scripts/compute_and_plot.py and scripts/linkedin_graphic.py.
+# These versions (Python 3.14) regenerate data/jackson_ms_sun_times_2025.csv byte-for-byte.
+numpy==2.5.1
+matplotlib==3.11.0
