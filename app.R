@@ -58,15 +58,19 @@ if (!dir.exists("cache")) dir.create("cache")
 # require an API key and draw "API KEY REQUIRED" across every tile without one
 # (carto.com/basemaps/apikey). Esri's keyless Dark Gray Canvas is the closest
 # dark equivalent: a base layer plus its label (reference) overlay. R leaflet has
-# no provider entry for it, so the URLs are given directly; the attribution and
-# maxZoom are leaflet-providers' for the matching Esri Gray Canvas.
+# no provider entry for it, so the URLs are given directly; maxZoom is
+# leaflet-providers' for the matching Esri Gray Canvas. Esri's terms require
+# "Powered by Esri" plus the service's own source line (its copyrightText at
+# .../MapServer?f=json); both layers carry the same string, shown once.
 add_dark_basemap <- function(map) {
   esri <- "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/%s/MapServer/tile/{z}/{y}/{x}"
+  esri_attr <- "Powered by Esri | Esri, HERE, Garmin, &copy; OpenStreetMap contributors, and the GIS user community"
   map %>%
     addTiles(urlTemplate = sprintf(esri, "World_Dark_Gray_Base"), group = "Basemap",
-             attribution = "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ",
+             attribution = esri_attr,
              options = tileOptions(maxZoom = 16)) %>%
     addTiles(urlTemplate = sprintf(esri, "World_Dark_Gray_Reference"), group = "Basemap",
+             attribution = esri_attr,
              options = tileOptions(maxZoom = 16))
 }
 
