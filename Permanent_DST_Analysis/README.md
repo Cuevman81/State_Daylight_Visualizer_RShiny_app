@@ -48,7 +48,7 @@ A common mix-up is "permanent DST = later sunrises **and earlier sunsets**." Not
 | Earliest summer sunrise | ~5:53 AM | ~5:53 AM (unchanged) | **~4:53 AM** |
 | Latest summer sunset | ~8:12 PM | ~8:12 PM (unchanged) | **~7:12 PM** |
 | Days sunrise after 7:30 AM | 0 | **105** | 0 |
-| Days sunset after 6:00 PM | 243 | **329** | 243 |
+| Days sunset after 6:00 PM | 243 | **329** | **201** |
 
 - **Permanent DST** buys bright winter evenings (sun up past 6 PM nearly year-round)
   at the cost of **dark winter mornings** — sun rising after 7:30 AM for ~105 days.
