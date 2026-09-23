@@ -44,7 +44,7 @@ INK_ON_DARK    <- "white"    # text drawn directly on the plot panel
 INK_MUTED      <- "gray70"   # captions / secondary annotation
 LABEL_FILL     <- "gray15"   # ggrepel label background
 TILE_FILL      <- "gray20"   # calendar tiles
-CACHE_VERSION  <- "v4"       # bump whenever a data function's OUTPUT changes
+CACHE_VERSION  <- "v5"       # bump whenever a data function's OUTPUT changes
 FULL_MOON_NAMES <- c(
   "January" = "Wolf Moon",    "February" = "Snow Moon",    "March"    = "Worm Moon",
   "April"   = "Pink Moon",    "May"      = "Flower Moon",  "June"     = "Strawberry Moon",
@@ -359,10 +359,17 @@ get_lunar_events <- function(daily_moon_data, major_phases, year, lat, lon,
       mutate(event = "Black Moon", details = "Third new moon in a season with four")
   }
 
+  # One row per date, keeping every event on it. This used to be
+  # distinct(date, .keep_all = TRUE), which kept only the first event of the
+  # day -- so a Blue Moon that was also a super or micro moon (the Aug 2023
+  # "Super Blue Moon", 31 May 2026) was silently dropped from the table.
   bind_rows(super_full, micro_full, super_new, micro_new, blue_moons, black_moons) %>%
     select(date, event, details) %>%
     arrange(date) %>%
-    distinct(date, .keep_all = TRUE)
+    group_by(date) %>%
+    summarise(event   = paste(unique(event),   collapse = " + "),
+              details = paste(unique(details), collapse = "; "),
+              .groups = "drop")
 }
 
 # --- 1B. Moon Data (restored: phase_name, phase_alpha, full_moon_data, yearly_summary_data) ---
