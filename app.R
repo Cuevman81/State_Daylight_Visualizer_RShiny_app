@@ -1551,18 +1551,21 @@ server <- function(input, output, session) {
     df <- lunar_data()$daily_data
 
     # Each full moon's distance at the moment of full moon (not the 00:00 UTC
-    # daily sample, which can be most of a day away), plotted on its local date.
+    # daily sample, which can be most of a day away). x is that instant on the
+    # daily line's own scale (whole days = 00:00 UTC), so the point sits on the
+    # curve; the label keeps the local date.
     phases     <- lunar_data()$major_phases %>%
       filter(phase_type == "Full Moon") %>%
-      mutate(distance_km = moon_distance_km(phase_time)) %>%
-      select(date, distance_km)
+      mutate(distance_km = moon_distance_km(phase_time),
+             x_instant   = structure(as.numeric(phase_time) / 86400, class = "Date")) %>%
+      select(date, x_instant, distance_km)
     supermoons <- phases %>% slice_min(distance_km, n = 2)
 
     p <- ggplot(df, aes(x = date, y = distance_km)) +
       geom_line(color = "gray60", linewidth = 1) +
-      geom_point(data = phases, aes(y = distance_km), color = "gold", size = 3) +
+      geom_point(data = phases, aes(x = x_instant, y = distance_km), color = "gold", size = 3) +
       geom_label_repel(data = supermoons,
-                       aes(y = distance_km,
+                       aes(x = x_instant, y = distance_km,
                            label = paste0("Supermoon\n", format(date, "%b %d"),
                                           "\n", formatC(round(distance_km), format="d", big.mark=","), " km")),
                        fill = LABEL_FILL, color = "gold", size = 3, label.padding = unit(0.3, "lines")) +
