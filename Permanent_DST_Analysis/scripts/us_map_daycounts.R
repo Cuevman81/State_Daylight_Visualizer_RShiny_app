@@ -17,7 +17,16 @@ suppressPackageStartupMessages({
   library(dplyr); library(tidyr); library(patchwork)
 })
 
-BASE <- "/Users/rodneycuevas/Library/CloudStorage/OneDrive-MississippiDepartmentofEnvironmentalQuality/Documents/Github/Sunrise_Sunset_Data/Permanent_DST_Analysis"
+# Resolve Permanent_DST_Analysis/ from this script's own location, so output
+# lands next to the copy being run. BASE used to be a hard-coded path into
+# Rodney's OneDrive folder: from a clone it silently overwrote the OneDrive
+# copy's CSV/PNG, and on anyone else's machine it failed.
+.this <- tryCatch(normalizePath(sys.frame(1)$ofile), error = function(e) NULL)  # source()
+if (is.null(.this)) {                                                           # Rscript
+  .f <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE))
+  if (length(.f)) .this <- normalizePath(.f)
+}
+BASE <- if (is.null(.this)) getwd() else dirname(dirname(.this))
 PLOT_DIR <- file.path(BASE, "plots")
 DATA_DIR <- file.path(BASE, "data")
 
