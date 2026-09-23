@@ -820,7 +820,8 @@ get_state_sun_grid <- function(state_name, analysis_year, resolution = 30) {
     daily_data = daily_data,
     poi        = poi,
     tz         = tz,
-    dst_dates  = dst_dates
+    dst_dates  = dst_dates,
+    border     = raw_map    # the outline the grid was cut from (incl. AK / HI)
   )
   saveRDS(res, cache_file)
   return(res)
@@ -1714,7 +1715,10 @@ server <- function(input, output, session) {
 
     # Use plain map_data polygon for the state border — avoids geom_sf/coord_sf
     # conflicts inside facet_wrap that cause "replacement has N rows, data has 1".
-    state_border <- map_data("state", region = tolower(params()$state))
+    # It is the outline get_state_sun_grid() cut the grid from: re-reading
+    # map_data("state") here failed for Alaska and Hawaii ("no recognized region
+    # names"), because that database only holds the lower 48.
+    state_border <- state_data()$border
     contour_breaks <- seq(-60, 70, by = 10)
 
     ggplot(df, aes(x = lon, y = lat)) +
