@@ -54,6 +54,22 @@ FULL_MOON_NAMES <- c(
 
 if (!dir.exists("cache")) dir.create("cache")
 
+# Dark basemap for both leaflet maps. CARTO's basemaps (CartoDB.DarkMatter) now
+# require an API key and draw "API KEY REQUIRED" across every tile without one
+# (carto.com/basemaps/apikey). Esri's keyless Dark Gray Canvas is the closest
+# dark equivalent: a base layer plus its label (reference) overlay. R leaflet has
+# no provider entry for it, so the URLs are given directly; the attribution and
+# maxZoom are leaflet-providers' for the matching Esri Gray Canvas.
+add_dark_basemap <- function(map) {
+  esri <- "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/%s/MapServer/tile/{z}/{y}/{x}"
+  map %>%
+    addTiles(urlTemplate = sprintf(esri, "World_Dark_Gray_Base"), group = "Basemap",
+             attribution = "Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ",
+             options = tileOptions(maxZoom = 16)) %>%
+    addTiles(urlTemplate = sprintf(esri, "World_Dark_Gray_Reference"), group = "Basemap",
+             options = tileOptions(maxZoom = 16))
+}
+
 # ==============================================================================
 # 1. MODULAR DATA FUNCTIONS
 # ==============================================================================
@@ -1035,7 +1051,7 @@ server <- function(input, output, session) {
   output$map <- renderLeaflet({
     isolate({
       leaflet() %>%
-        addProviderTiles(providers$CartoDB.DarkMatter) %>%
+        add_dark_basemap() %>%
         setView(lng = coords$lon, lat = coords$lat, zoom = 4) %>%
         addMarkers(lng = coords$lon, lat = coords$lat)
     })
@@ -1050,7 +1066,7 @@ server <- function(input, output, session) {
   output$mini_map <- renderLeaflet({
     isolate({
       leaflet() %>%
-        addProviderTiles(providers$CartoDB.DarkMatter) %>%
+        add_dark_basemap() %>%
         setView(lng = coords$lon, lat = coords$lat, zoom = 8) %>%
         addMarkers(lng = coords$lon, lat = coords$lat, label = "Analyzed Point")
     })
