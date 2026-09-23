@@ -79,7 +79,7 @@ earlier ones. In winter you can brighten the morning or the evening, not both.
 
 | | Current law | Permanent DST |
 |---|---|---|
-| Latest winter sunrise (Jackson) | ~7:18 AM | **~8:03 AM** |
+| Latest winter sunrise (Jackson) | ~7:03 AM | **~8:03 AM** |
 | Earliest winter sunset (Jackson) | ~4:55 PM | **~5:55 PM** |
 | Days sunrise is after 7:30 AM | 0 | **105** |
 | Days sunset is after 6:00 PM | 243 | **329** |

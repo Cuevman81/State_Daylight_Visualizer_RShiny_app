@@ -436,11 +436,21 @@ print("wrote", fig3_path)
 def extremes(series):
     return hhmm(np.min(series)), hhmm(np.max(series))
 
+# "Winter" = the days current law is on standard time. The latest sunrise of
+# the whole year is NOT a winter one: under current law it falls on the first
+# and last days of DST (Mar 9 / Nov 1, 07:18 CDT). Printing that on the
+# "winter" line is how 7:18 got into the README tables instead of 7:03.
+winter = np.array([not (DST_START_DOY <= dd.timetuple().tm_yday < DST_END_DOY)
+                   for dd in dates])
+
 print("\n=== KEY NUMBERS (", CITY, YEAR, ") ===")
-print("Latest winter sunrise  | current law:", extremes(sr_cur)[1],
-      "| permanent DST:", extremes(sr_perm)[1])
-print("Earliest winter sunset | current law:", extremes(ss_cur)[0],
-      "| permanent DST:", extremes(ss_perm)[0])
+print("Latest winter sunrise  | current law:", hhmm(np.max(sr_cur[winter])),
+      "| permanent DST:", hhmm(np.max(sr_perm[winter])),
+      "| permanent standard:", hhmm(np.max(sr_std[winter])))
+print("Latest sunrise all year (current law, first/last DST days):", extremes(sr_cur)[1])
+print("Earliest winter sunset | current law:", hhmm(np.min(ss_cur[winter])),
+      "| permanent DST:", hhmm(np.min(ss_perm[winter])),
+      "| permanent standard:", hhmm(np.min(ss_std[winter])))
 print("Days sunrise after 7:00 AM  | current:", count_after(sr_cur, 7.0),
       "| permanent DST:", count_after(sr_perm, 7.0))
 print("Days sunrise after 7:30 AM  | current:", count_after(sr_cur, 7.5),

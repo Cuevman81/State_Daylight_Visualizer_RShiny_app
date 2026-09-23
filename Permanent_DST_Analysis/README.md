@@ -43,7 +43,7 @@ A common mix-up is "permanent DST = later sunrises **and earlier sunsets**." Not
 
 | | Current law | Permanent DST | Permanent standard |
 |---|---|---|---|
-| Latest winter sunrise | ~7:18 AM | **~8:03 AM** | ~7:18 AM (unchanged) |
+| Latest winter sunrise | ~7:03 AM | **~8:03 AM** | ~7:03 AM (unchanged) |
 | Earliest winter sunset | ~4:55 PM | **~5:55 PM** | ~4:55 PM (unchanged) |
 | Earliest summer sunrise | ~5:53 AM | ~5:53 AM (unchanged) | **~4:53 AM** |
 | Latest summer sunset | ~8:12 PM | ~8:12 PM (unchanged) | **~7:12 PM** |
